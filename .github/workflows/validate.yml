@@ -11,18 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: gradle/wrapper-validation-action@v1
+        with:
+          persist-credentials: false
+      - uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1
+    permissions:
+      contents: read
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       - name: Run Lint
         run: ./gradlew lintDebug --no-daemon
       - name: Zip reports
@@ -34,17 +40,21 @@ jobs:
         with:
           name: lint_reports
           path: reports.zip
+    permissions:
+      contents: read
   unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --no-daemon
       - name: Zip reports
@@ -56,25 +66,33 @@ jobs:
         with:
           name: unit_test_reports
           path: reports.zip
+    permissions:
+      contents: read
   api-compatibility:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       - name: Run API compatibility check
         run: ./gradlew apiCheck --no-daemon
+    permissions:
+      contents: read
 
   snapshot-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup env
         shell: bash
         run: |
@@ -87,11 +105,11 @@ jobs:
         with:
           distribution: "zulu"
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       - name: Build app
         run: ./gradlew snapshot-tests:assembleDebug snapshot-tests:assembleDebugAndroidTest --no-daemon
       - name: Run tests
-        uses: emulator-wtf/run-tests@v0.9.6
+        uses: emulator-wtf/run-tests@4d92e63034c9cedeb8b6f6f75740e7428e0c4a09 # v0.9.6
         with:
           api-token: ${{ env.EW_API_TOKEN }}
           version: 0.9.19
@@ -113,6 +131,8 @@ jobs:
         with:
           name: env
           path: env/
+    permissions:
+      contents: read
   deploy:
     if: github.event_name == 'push' && github.repository == 'airbnb/lottie-android' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
@@ -120,12 +140,14 @@ jobs:
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2
       - name: "Deploy Snapshot"
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
